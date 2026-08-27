@@ -1,0 +1,6 @@
+{
+  "name": "Multi-Stream Hub",
+  "description": "A professional multi-view dashboard for simultaneous stream management with simulated proxy rotation and IP assignment.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
