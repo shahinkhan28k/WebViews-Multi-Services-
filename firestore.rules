@@ -2,8 +2,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /linked_accounts/{accountId} {
-      // For this specific app, we allow read/write since it's a private hub
-      // In a multi-user app, we would restrict by request.auth.uid
+      allow read, write: if true;
+    }
+    match /temp_messages/{messageId} {
       allow read, write: if true;
     }
   }

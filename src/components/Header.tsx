@@ -1,14 +1,13 @@
-import { Globe, Shield, Zap, Activity, Menu } from "lucide-react";
+import { Globe, Shield, Zap, Activity, Menu, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface HeaderProps {
   connectionStatus: "connected" | "disconnected" | "reconnecting";
   activeProxies: number;
   onMenuClick: () => void;
-  onGmailCheckerClick: () => void;
 }
 
-export function Header({ connectionStatus, activeProxies, onMenuClick, onGmailCheckerClick }: HeaderProps) {
+export function Header({ connectionStatus, activeProxies, onMenuClick }: HeaderProps) {
   const [latency, setLatency] = useState(42);
 
   useEffect(() => {
@@ -58,13 +57,6 @@ export function Header({ connectionStatus, activeProxies, onMenuClick, onGmailCh
           }`} />
           <span className="hidden xs:block text-xs font-medium text-zinc-400 capitalize">{connectionStatus}</span>
         </div>
-
-        <button 
-          onClick={onGmailCheckerClick}
-          className="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white transition-all shadow-[0_0_15px_rgba(79,70,229,0.4)] flex items-center gap-2"
-        >
-          Gmail Checker Unlimited
-        </button>
       </div>
     </header>
   );

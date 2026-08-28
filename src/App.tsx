@@ -2,9 +2,6 @@ import { useState, useCallback, useEffect } from "react";
 import { Header } from "./components/Header";
 import { ConfigPanel } from "./components/ConfigPanel";
 import { StreamGrid } from "./components/StreamGrid";
-import { AccountGenerator } from "./components/AccountGenerator";
-import { InboxViewer } from "./components/InboxViewer";
-import { GmailManager } from "./components/GmailManager";
 import { ControlBar } from "./components/ControlBar";
 import { LogFooter } from "./components/LogFooter";
 import { StreamInstance, LogEntry } from "./types";
@@ -17,38 +14,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isAllMuted, setIsAllMuted] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<"main" | "gmail-checker">("main");
-  const [selectedInboxEmail, setSelectedInboxEmail] = useState<string | null>(null);
 
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      if (hash === "#gmail-checker") {
-        setCurrentView("gmail-checker");
-      } else {
-        setCurrentView("main");
-      }
-    };
-
-    window.addEventListener("hashchange", handleHashChange);
-    handleHashChange(); // Initial check
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
-
-  useEffect(() => {
-    // Handle redirect from OAuth
-    const params = new URLSearchParams(window.location.search);
-    const view = params.get("view");
-    if (view === "gmail-checker") {
-      setCurrentView("gmail-checker");
-      // Clean URL
-      window.history.replaceState({}, document.title, "/");
-    }
-  }, []);
-
-  const navigateTo = (view: "main" | "gmail-checker") => {
-    setCurrentView(view);
-  };
   const [generatedAccounts, setGeneratedAccounts] = useState<Array<{ id: string; alias: string; country: string }>>([]);
 
   const addLog = useCallback((message: string, type: LogEntry["type"] = "info") => {
@@ -156,13 +122,13 @@ export default function App() {
     setStreams(prev => prev.map(s => {
       if (s.id === id) {
         const octets = Array.from({length: 4}, () => Math.floor(Math.random() * 255)).join(".");
-        const countriesList = ["USA", "CANADA", "UK", "GERMANY", "FRANCE", "JAPAN", "SINGAPORE", "AUSTRALIA", "INDIA", "BRAZIL"];
+        const countriesList = ["USA", "CANADA", "UK", "GERMANY", "FRANCE", "JAPAN", "SINGAPORE", "AUSTRALIA", "INDIA", "BRAZIL", "SWEDEN", "KOREA"];
         const selectedCountry = countriesList[Math.floor(Math.random() * countriesList.length)];
         
-        const devices = s.mode === "shorts" ? ["Mobile", "Tablet"] : ["Mobile", "Tablet", "Desktop"];
-        const osList = s.mode === "shorts" ? ["iOS", "Android"] : ["iOS", "Android", "Windows", "MacOS", "Linux"];
-        const browsers = ["Chrome", "Safari", "Firefox", "Edge"];
-        const resolutions = s.mode === "shorts" ? ["375x812", "414x896", "1080x1920"] : ["1920x1080", "1366x768", "375x812", "414x896", "1536x864"];
+        const devices = s.mode === "shorts" ? ["iPhone 15 Pro", "Samsung S24 Ultra", "Pixel 8 Pro", "iPad Air"] : ["MacBook Pro", "Alienware X16", "Desktop Custom", "Mobile Device"];
+        const osList = s.mode === "shorts" ? ["iOS 17", "Android 14"] : ["Windows 11", "macOS Sonoma", "Ubuntu 24.04"];
+        const browsers = ["Chrome Mobile", "Safari Mobile", "Firefox Mobile", "Edge"];
+        const resolutions = s.mode === "shorts" ? ["390x844", "430x932", "1080x1920"] : ["1920x1080", "2560x1440", "1536x864"];
 
         const profile = {
           device: devices[Math.floor(Math.random() * devices.length)],
@@ -171,13 +137,15 @@ export default function App() {
           resolution: resolutions[Math.floor(Math.random() * resolutions.length)]
         };
 
-        addLog(`Node Identity Regenerated: [${selectedCountry}] IP: ${octets}`, "proxy");
+        const nodeId = id.split('-')[1] || '?';
+        addLog(`Node #${nodeId}: Identity Rotated. New IP: ${octets} (${selectedCountry}) - Device: ${profile.device}`, "success");
         
         return {
           ...s,
           assignedIp: octets,
           country: selectedCountry,
-          browserProfile: profile
+          browserProfile: profile,
+          alias: `SESSION_${Math.random().toString(36).substring(7).toUpperCase()}`
         };
       }
       return s;
@@ -211,25 +179,9 @@ export default function App() {
         connectionStatus={isLoading ? "reconnecting" : "connected"} 
         activeProxies={streams.length} 
         onMenuClick={() => setIsSidebarOpen(true)}
-        onGmailCheckerClick={() => navigateTo("gmail-checker")}
       />
       
-      {currentView === "gmail-checker" ? (
-        <div className="flex-1 flex flex-col min-h-0 bg-black">
-          {!selectedInboxEmail ? (
-            <GmailManager 
-              onClose={() => navigateTo("main")} 
-              onOpenInbox={(email) => setSelectedInboxEmail(email)} 
-            />
-          ) : (
-            <InboxViewer 
-              email={selectedInboxEmail} 
-              onClose={() => setSelectedInboxEmail(null)} 
-            />
-          )}
-        </div>
-      ) : (
-        <div key="view-main-dashboard" className="flex flex-1 overflow-hidden relative">
+      <div key="view-main-dashboard" className="flex flex-1 overflow-hidden relative">
         {/* Sidebar for Desktop and Mobile Drawer */}
         <div className={`
           flex flex-col border-r border-zinc-800 bg-zinc-900/40 w-80 shrink-0 p-4 gap-4 overflow-y-auto
@@ -251,11 +203,6 @@ export default function App() {
               setIsSidebarOpen(false);
             }} 
             isLoading={isLoading} 
-          />
-          <AccountGenerator 
-            onGenerate={handleGenerateAccounts} 
-            generatedAccounts={generatedAccounts} 
-            onSelectAccount={(email) => setSelectedInboxEmail(email)}
           />
         </div>
 
@@ -284,7 +231,6 @@ export default function App() {
           />
         </div>
       </div>
-    )}
 
     <LogFooter logs={logs} onClear={clearLogs} />
     </div>

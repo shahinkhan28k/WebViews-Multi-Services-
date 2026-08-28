@@ -11,6 +11,17 @@
         "expiry_date": "number",
         "linked_at": "timestamp"
       }
+    },
+    "temp_messages": {
+      "description": "Stores incoming emails for temporary addresses",
+      "fields": {
+        "to": "string",
+        "from": "string",
+        "subject": "string",
+        "text": "string",
+        "html": "string",
+        "received_at": "timestamp"
+      }
     }
   }
 }
