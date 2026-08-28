@@ -22,7 +22,7 @@ db.settings({ ignoreUndefinedProperties: true });
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
   app.use(cors());
   app.use(express.json());
@@ -305,6 +305,10 @@ async function startServer() {
     }
   });
 
+  server.on("error", (err) => {
+    console.error("SMTP Server Error (possibly port blocked):", err.message);
+  });
+
   server.listen(smtpPort, "0.0.0.0", () => {
     console.log(`SMTP Server listening on port ${smtpPort}`);
   });
@@ -324,7 +328,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  app.listen(Number(PORT), "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
